@@ -34,6 +34,13 @@ class GameWorld {
       this.addGameObject(x, y);
     });
 
+    window.addEventListener("touchend", (event) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = event.touches[0].clientX - rect.left;
+      const y = event.touches[0].clientY - rect.top;
+      this.addGameObject(x, y);
+    });
+
     window.addEventListener("keydown", (event) => {
       if (event.key === "d") {
         this.toggleDebug();
