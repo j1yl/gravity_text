@@ -27,12 +27,25 @@ class GameWorld {
     });
     window.addEventListener("resize", () => this.resetWorld());
 
-    this.canvas.addEventListener("click", (event) => {
+    window.addEventListener("click", (event) => {
       const rect = this.canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       this.addGameObject(x, y);
     });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "d") {
+        this.toggleDebug();
+      }
+    });
+  }
+
+  toggleDebug() {
+    this.debug = !this.debug;
+    for (const gameObject of this.gameObjects) {
+      gameObject.debug = this.debug;
+    }
   }
 
   resetWorld() {
@@ -43,8 +56,8 @@ class GameWorld {
   }
 
   createWorld() {
-    const numObjects = 32;
-    const rows = 8; // Define the number of rows
+    const numObjects = 0;
+    const rows = 4; // Define the number of rows
     const cols = 4; // Define the number of columns
     const cellWidth = this.canvas.width / cols;
     const cellHeight = this.canvas.height / rows;
@@ -265,7 +278,8 @@ class GameWorld {
         Math.random() * 100 - 50,
         Math.random() * 100 - 50,
         Math.random() * 50,
-        Math.floor(Math.random() * 10)
+        Math.floor(Math.random() * 10),
+        this.debug
       )
     );
   }

@@ -1,11 +1,13 @@
 class Character extends GameObject {
-  constructor(ctx, x, y, vx, vy, mass, char) {
+  constructor(ctx, x, y, vx, vy, mass, char, debug) {
     super(ctx, x, y, vx, vy, mass);
 
     this.char = char;
     this.angle = 0;
-    this.size = 128;
-    this.height = this.size * 0.64;
+
+    window.innerWidth > 768 ? (this.size = 128) : (this.size = 80);
+    this.height = this.size * 0.7;
+    this.debug = debug;
     this.calculateSize();
   }
 
@@ -19,34 +21,48 @@ class Character extends GameObject {
     this.ctx.translate(this.x, this.y);
     this.ctx.rotate(this.angle);
     this.ctx.font = `${this.size}px Roboto, monospace`;
+    this.ctx.fillStyle = this.isColliding ? "#ff0000" : "#000000";
     this.ctx.fillText(this.char, -this.width / 2, this.height / 2);
 
-    this.ctx.strokeStyle = "#000000";
-    this.ctx.strokeRect(
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height
-    );
-    this.ctx.restore();
+    // Draw hitbox
+    if (this.debug) {
+      this.ctx.strokeStyle = "#000000";
+      this.ctx.strokeRect(
+        -this.width / 2,
+        -this.height / 2,
+        this.width,
+        this.height
+      );
 
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.x, this.y);
-    this.ctx.lineTo(this.x + this.vx, this.y + this.vy);
-    this.ctx.strokeStyle = "#ff0000";
-    this.ctx.lineWidth = 2;
-    this.ctx.stroke();
+      // Draw velocity vector
+      this.ctx.strokeStyle = "#000000";
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, 0);
+      this.ctx.lineTo(this.vx, this.vy);
+      this.ctx.lineWidth = 2;
+      this.ctx.stroke();
+    }
+
+    this.ctx.restore();
   }
 
   update(secondsPassed) {
     const g = 9.81;
+    const maxVelocity = 100;
+
+    if (Math.abs(this.vx) > maxVelocity) {
+      this.vx = maxVelocity * Math.sign(this.vx);
+    }
+
+    if (Math.abs(this.vy) > maxVelocity) {
+      this.vy = maxVelocity * Math.sign(this.vy);
+    }
 
     this.vy += g * secondsPassed;
     this.x += this.vx * secondsPassed;
     this.y += this.vy * secondsPassed;
 
-    // Rotate the character (for example, based on velocity)
-    this.angle += this.vx * secondsPassed * 0.01; // Adjust rotation speed as needed
+    this.angle += this.vx * secondsPassed * 0.01;
   }
 
   getHitbox() {
@@ -56,5 +72,10 @@ class Character extends GameObject {
       width: this.width,
       height: this.height,
     };
+  }
+
+  getPastelColor() {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 100%, 80%)`;
   }
 }
