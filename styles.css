@@ -1,5 +1,6 @@
 *, *::before, *::after {
   box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 * {
@@ -29,4 +30,29 @@ p, h1, h2, h3, h4, h5, h6 {
 
 #root, #__next {
   isolation: isolate;
+}
+
+.info {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.info p {
+  color: #999999;
+  text-align: center;
+}
+
+@media screen and (max-width: 600px) {
+  .info span {
+    visibility: hidden;
+  }
 }
