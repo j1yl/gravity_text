@@ -89,15 +89,17 @@ class GameWorld {
         const hitbox1 = obj1.getHitbox();
         const hitbox2 = obj2.getHitbox();
 
+        const minDist =
+          Math.hypot(hitbox1.width, hitbox1.height) / 2 +
+          Math.hypot(hitbox2.width, hitbox2.height) / 2;
+        if (Math.hypot(obj1.x - obj2.x, obj1.y - obj2.y) > minDist) continue;
+
         if (this.rectIntersect(hitbox1, hitbox2, obj1.angle, obj2.angle)) {
           obj1.isColliding = true;
           obj2.isColliding = true;
 
           let vCollision = { x: obj2.x - obj1.x, y: obj2.y - obj1.y };
-          let distance = Math.sqrt(
-            (obj2.x - obj1.x) * (obj2.x - obj1.x) +
-              (obj2.y - obj1.y) * (obj2.y - obj1.y)
-          );
+          let distance = Math.hypot(vCollision.x, vCollision.y);
           let vCollisionNorm = {
             x: vCollision.x / distance,
             y: vCollision.y / distance,
@@ -110,9 +112,7 @@ class GameWorld {
             vRelativeVelocity.x * vCollisionNorm.x +
             vRelativeVelocity.y * vCollisionNorm.y;
 
-          if (speed < 0) {
-            break;
-          }
+          if (speed < 0) continue;
 
           speed *= restitution;
 
@@ -122,13 +122,13 @@ class GameWorld {
           obj2.vx += impulse * obj1.mass * vCollisionNorm.x;
           obj2.vy += impulse * obj1.mass * vCollisionNorm.y;
 
-          // Positional correction to prevent objects from sticking
-          const overlap = 0.05 * (distance - obj1.width / 2 - obj2.width / 2);
-          if (overlap >= 0) {
-            obj1.x -= (overlap * (obj1.x - obj2.x)) / distance;
-            obj1.y -= (overlap * (obj1.y - obj2.y)) / distance;
-            obj2.x += (overlap * (obj1.x - obj2.x)) / distance;
-            obj2.y += (overlap * (obj1.y - obj2.y)) / distance;
+          const overlap = 0.25 * (minDist - distance);
+          if (overlap > 0) {
+            const correction = overlap / 2;
+            obj1.x -= correction * vCollisionNorm.x;
+            obj1.y -= correction * vCollisionNorm.y;
+            obj2.x += correction * vCollisionNorm.x;
+            obj2.y += correction * vCollisionNorm.y;
           }
         }
       }
