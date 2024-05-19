@@ -1,6 +1,3 @@
-const restitution = 0.5;
-const friction = 0.99;
-
 class GameWorld {
   constructor(canvasId) {
     this.canvas = null;
@@ -9,6 +6,9 @@ class GameWorld {
     this.oldTimeStamp = 0;
     this.gameObjects = [];
     this.resetCounter = 0;
+
+    this.restitution = 0.5;
+    this.friction = 0.9;
 
     this.init(canvasId);
   }
@@ -25,11 +25,26 @@ class GameWorld {
     window.requestAnimationFrame((timeStamp) => {
       this.gameLoop(timeStamp);
     });
+    window.addEventListener("resize", () => this.resetWorld());
+
+    this.canvas.addEventListener("click", (event) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      this.addGameObject(x, y);
+    });
+  }
+
+  resetWorld() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    this.gameObjects = [];
+    this.createWorld();
   }
 
   createWorld() {
-    const numObjects = 16;
-    const rows = 4; // Define the number of rows
+    const numObjects = 32;
+    const rows = 8; // Define the number of rows
     const cols = 4; // Define the number of columns
     const cellWidth = this.canvas.width / cols;
     const cellHeight = this.canvas.height / rows;
@@ -41,17 +56,7 @@ class GameWorld {
       const x = col * cellWidth + cellWidth / 2;
       const y = row * cellHeight + cellHeight / 2;
 
-      this.gameObjects.push(
-        new Character(
-          this.context,
-          x,
-          y,
-          Math.floor(Math.random() * 100) - 50,
-          Math.floor(Math.random() * 100) - 50,
-          Math.floor(Math.random() * 50),
-          "J"
-        )
-      );
+      this.addGameObject(x, y);
     }
   }
 
@@ -114,7 +119,7 @@ class GameWorld {
 
           if (speed < 0) continue;
 
-          speed *= restitution;
+          speed *= this.restitution;
 
           let impulse = (2 * speed) / (obj1.mass + obj2.mass);
           obj1.vx -= impulse * obj2.mass * vCollisionNorm.x;
@@ -122,7 +127,7 @@ class GameWorld {
           obj2.vx += impulse * obj1.mass * vCollisionNorm.x;
           obj2.vy += impulse * obj1.mass * vCollisionNorm.y;
 
-          const overlap = 0.25 * (minDist - distance);
+          const overlap = 0.5 * (minDist - distance);
           if (overlap > 0) {
             const correction = overlap / 2;
             obj1.x -= correction * vCollisionNorm.x;
@@ -228,25 +233,40 @@ class GameWorld {
       const hitbox = obj.getHitbox();
 
       if (hitbox.x < 0) {
-        obj.vx = Math.abs(obj.vx) * restitution;
+        obj.vx = Math.abs(obj.vx) * this.restitution;
         obj.x = hitbox.width / 2;
       } else if (hitbox.x + hitbox.width > canvasWidth) {
-        obj.vx = -Math.abs(obj.vx) * restitution;
+        obj.vx = -Math.abs(obj.vx) * this.restitution;
         obj.x = canvasWidth - hitbox.width / 2;
       }
 
       if (hitbox.y < 0) {
-        obj.vy = Math.abs(obj.vy) * restitution;
+        obj.vy = Math.abs(obj.vy) * this.restitution;
         obj.y = hitbox.height / 2;
       } else if (hitbox.y + hitbox.height > canvasHeight) {
-        obj.vy = -Math.abs(obj.vy) * restitution;
+        obj.vy = -Math.abs(obj.vy) * this.restitution;
         obj.y = canvasHeight - hitbox.height / 2;
-        obj.vx *= friction; // Apply friction when the character hits the ground
+        obj.vx *= this.friction; // Apply friction when the character hits the ground
       }
     }
   }
 
   clearCanvas() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  addGameObject(x, y) {
+    if (this.gameObjects.length >= 64) return;
+    this.gameObjects.push(
+      new Character(
+        this.context,
+        x,
+        y,
+        Math.random() * 100 - 50,
+        Math.random() * 100 - 50,
+        Math.random() * 50,
+        Math.floor(Math.random() * 10)
+      )
+    );
   }
 }
