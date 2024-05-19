@@ -8,6 +8,7 @@ class Character extends GameObject {
     window.innerWidth > 768 ? (this.size = 128) : (this.size = 80);
     this.height = this.size * 0.7;
     this.debug = debug;
+    this.color = this.getPastelColor();
     this.calculateSize();
   }
 
@@ -21,7 +22,7 @@ class Character extends GameObject {
     this.ctx.translate(this.x, this.y);
     this.ctx.rotate(this.angle);
     this.ctx.font = `${this.size}px Roboto, monospace`;
-    this.ctx.fillStyle = this.isColliding ? "#ff0000" : "#000000";
+    this.ctx.fillStyle = this.isColliding ? this.color : "#000000";
     this.ctx.fillText(this.char, -this.width / 2, this.height / 2);
 
     // Draw hitbox
@@ -76,6 +77,6 @@ class Character extends GameObject {
 
   getPastelColor() {
     const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 100%, 80%)`;
+    return `hsl(${hue}, 100%, 50%)`;
   }
 }
